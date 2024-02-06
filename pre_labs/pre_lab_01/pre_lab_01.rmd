@@ -37,7 +37,7 @@ The library function loads an R library such as the tidyverse, providing access 
 
 ### Task 1: The console
 
-**Task** In the console (look below), type 2+2 and hit enter. What does it return? Type your answer below. **Answer:**
+**Task** In the console (look below), type 2+2 and hit enter. What does it return? Type your answer below. **Answer:4 **
 
 ### Task 2: Variables
 
@@ -55,7 +55,7 @@ number * number
 
 What does it return? Type your answer below:
 
-**Answer:**
+**Answer: 4**
 
 ### Task 3: Install packages
 
@@ -93,7 +93,7 @@ umd_courses <- read_rds("umd_courses.rds")
 
 Once it loads, look at the environment window at right in RStudio for umd_courses It's next to a small blue circle with a white arrow in it. To the right of that, look at how many "obs" the dataset has ("obs" is short for observation, which is another way of saying rows or records). Look at how many variables it has (another way of saying columns or fields). Write the number of observations and variables below.
 
-**Answer**
+**Answer: 60712 observations of 8 variables**
 
 ### Task 6: Glimpse data
 
@@ -103,7 +103,7 @@ Once it loads, look at the environment window at right in RStudio for umd_course
 glimpse(umd_courses)
 ```
 
-In the space below, write the data type for the "id" column and the "seats" column (it's in light gray, offset by \< \>). **Answer**
+In the space below, write the data type for the "id" column and the "seats" column (it's in light gray, offset by \< \>). **Answer: id is chr and seats is dbl**
 
 ### Task 7: Examine data "head"
 
@@ -113,7 +113,7 @@ In the space below, write the data type for the "id" column and the "seats" colu
 head(umd_courses)
 ```
 
-In the space below, write the name of the business from the first row of the "name" column. **Answer**
+In the space below, write the name of the business from the first row of the "name" column. **Answer: Directed Research**
 
 ### Task 8: Explore data with interactive dataframe
 
@@ -137,7 +137,7 @@ umd_courses |>
 
 Describe what you think each line of this code is doing below, based on the result:
 
-**Answer**
+**Answer: The first line is going into the dataframe called umd_courses. With the symbol, it's then telling R to group the pieces of data in the dataframe by the term column. It calls the symbol again, to tell R to then summarize  its findings of that grouping by providing a count of the number of classes, represented by n, in each term.**
 
 ### Task 10: Adding arrange to sort the data
 
@@ -152,7 +152,7 @@ umd_courses |>
   arrange(desc(count_classes))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? **Answer**
+Compared to the previous codeblock, what has changed and how did that affect the result? **Answer: There's an additional command in this codeblock, which directs R to arrange the count in descending order. As a result, the counts are the same and the data is grouped the same way, but it's now in descending order of terms with the most classes offered to least classes offered.**
 
 ### Task 11: Grouping by multiple columns
 
@@ -169,7 +169,7 @@ umd_courses |>
 
 Compared to the previous codeblock, how did the output change and what in the code changed it?
 
-**Answer**
+**Answer: The output now tells you how many classes are offered in each separate department per term, rather than just giving you total number of classes offered per term. Changing the columns we wanted to group by in the code did this — rather than just the one term column, we said we wanted to arrange by term but also by department. **
 
 ### Task 12: Other summary functions
 
@@ -185,7 +185,7 @@ umd_courses |>
   arrange(desc(total_seats))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? **Answer**
+Compared to the previous codeblock, what has changed and how did that affect the result? **Answer: This codeblock  adds something under the summarise function — in addition to a line of code asking R to provide number of classes when grouped by term, there's also a line asking R to sum all the seats in those classes and provide that result too. As a result, rather than the output giving us number of classes offered per department per term, we now can see the total number of classes offered per term, as well as the total number of seats across all those classes per term.**
 
 ### Task 13: different kinds of summarizations
 
@@ -203,7 +203,7 @@ umd_courses |>
   arrange(desc(total_seats))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? What do the top terms have in common? **Answer**
+Compared to the previous codeblock, what has changed and how did that affect the result? What do the top terms have in common? **Answer: This codeblock has more summarizations than the previous one. In addition to the line of code asking for a count of total classes and total seats across those classes offered per term, there are also lines of code asking R to calculate the mean number of seats and median number of seats offered in a class per term. As a result, the output has two additional columns which show mean and median seats for each term row. Both top terms in this codeblock and the previous codeblock are the ones with the highest number of total seats available. **
 
 ### Task 14: more aggregations
 
@@ -225,7 +225,7 @@ umd_courses |>
 
 Compared to the previous codeblock, what has changed and how did that affect the result? How is the data sorted?
 
-**Answer**
+**Answer: The group by column is different in this codeblock, which results in the data being presented by departments rather than by terms in the output. There are also two additional lines of code that ask R to summarize the data by providing a minimum and maximum number of seats offered in classes in each department, which reflects in the result by adding two columns representing that information. The data is sorted by department, and arranged in descending order from the department that offers the largest total number of seats in its classes to the smallest total number of seats.**
 
 ### Task 12: Questions
 
@@ -233,8 +233,8 @@ No code here; I want you to provide three questions that this data suggests to y
 
 **Answer**
 
-1.  
+1.  Are there certain disciplines (for instance, STEM classes versus humanities classes) that have larger average class sizes than others?
 
-2.  
+2.  What is the engineering cooperative education department and why are the maximum and average number of seats offered in classes in that department so large compared to other classes at the university? 
 
-3.  
+3.  Of the different language departments, which have more versus less offerings and more versus less seats at this university, and what does that reflect about the university's resources to teach different languages?
