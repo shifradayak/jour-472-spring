@@ -1,0 +1,105 @@
+---
+title: "lab_01"
+author: "Derek Willis"
+date: "2023-01-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Turn off scientific notation
+options(scipen=999)
+```
+
+## About this lab
+
+To complete this lab, you need to: \* run existing code as directed (look for **Task**). \* modify existing code as directed (look for **Task**). \* write code in empty codeblocks provided to answer questions included (look for **Q**). \* write out the answer in the form of a complete sentence in the space given (look for **A**). When you are finished, commit changes and push to your personal GitHub repo, then submit the URL to this document on ELMS.
+
+Remember to add any new verbs or concepts to your class reference notebook!
+
+## Load libraries and establish settings
+
+**Task** Run the codeblock below to load the Tidyverse. To run the codeblock, hit the little green play button in the upper right corner of the gray area (the codeblock) below.
+
+```{r}
+# Load the tidyverse. If you have not installed the tidyverse already, remove the # from the next line and run it first.  
+# install.packages('tidyverse')
+library(tidyverse)
+```
+
+## Load Data
+
+We're going to load the UMD courses data.
+
+**Task** Run the codeblock below to load the data, which is contained in an RDS file.
+
+```{r}
+umd_courses <- read_rds("lab_01.rds")
+```
+
+## Answer questions
+
+**Q1** Which department has the highest mean (average) number of seats for its classes? You need to show the department with the highest average first. Which one is the most surprising/interesting to you?
+
+**A1** The engineering cooperative education department has the highest average number of seats for its classes. This in itself was pretty surprising to me — 306 seems like a very large class, so it was interesting to see a department for which this was the average, meaning some classes are even larger than that. The theatre, dance and performance studies department was also interesting. I've taken a couple classes in that department and since they're performance-based, the class sizes are usually small, so it was surprising to me to find out that the average class size is actually fairly large, at 46 seats.
+
+```{r}
+umd_courses |>
+    group_by(department) |>
+    summarise(
+        mean_seats = mean(seats), 
+      ) |>
+    arrange(desc(mean_seats))
+```
+
+**Q2** Find out the greatest number of times any individual class has been offered in our dataset. Your code must show the greatest number of classes first. 
+**A2** There are a number of classes that have each been offered 22 times, which is the greatest number of offerings for an individual class.
+
+```{r}
+umd_courses |>
+  group_by(id) |>
+  summarise (
+    count_class = n(),
+  ) |>
+  arrange(desc(count_class))
+
+```
+
+**Q3** Count the number of courses for each instructor and department. Which instructor has taught the most? 
+**A3** Keith Yearwood has taught the most, with 61 classes in the geographical sciences department.
+
+```{r}
+umd_courses |>
+  group_by (department, instructors) |>
+  summarise (
+    count_class = n(),
+  ) |>
+  arrange(desc(count_class))
+```
+
+**Q4** Given the results for Q3, what would have made it easier to find the answer? You don't have to know *how* to accomplish this; I want you to describe in words what would make the answer easier to see. How confident are you that the answer you got is the right one, and why? 
+**A4** Being able to get rid of all the classes where there's no instructor would have made it easier. I'm fairly confident that the answer to question 3 is correct, because I manually combed through the table to find the first actual instructor listed when the data was arranged in descending order, but getting that result first without having to sift through the N/As would have been good. As per what we learned in class, we can use the drop_na() function for this.
+
+**Q5** Take one of the questions you listed in the final question of the pre_lab and try to answer it here in code. If you don't know how to fully answer it, write what code you can and describe in words what else you would need to do. If you got an answer, is it interesting? 
+**A5** One of my pre-lab questions was: Of the different language departments, which have more versus less offerings and more versus less seats at this university? I'm not sure exactly how to write the first step of this code, which would basically need to only look at the data for different language departments. I'm thinking this might look like a function that tells R to filter out all data that isn't equal to Arabic, Chinese, French, Germanic Studies, Hebrew, Italian, Japanese, Korean, Persian, Portuguese, Russian, and Spanish, which are all the different language departments at this university. Once I've done that, I'd write the following code. There are two options — the first code block groups by department and looks at the total number of seats offered across all previous terms for each department. The second code block groups by ID and department and looks at the count of number of individual classes offered in each department as a measure of how many classes each department has the resources to offer. 
+
+```{r}
+#A line of code here that would somehow filter data so the below functions only consider data that pertains to the language departments
+umd_courses |>
+  group_by(department) |>
+    summarise (
+      total_seats = sum(seats)
+    ) |>
+  arrange(desc(total_seats))
+```
+
+```{r}
+umd_courses |>
+  group_by(department, id) |>
+#A line of code here that would somehow filter the data so once it's grouped, R only looks at data that pertains to the language departments
+    summarise (
+      count_classes = n()
+    ) |>
+  arrange(desc(count_classes))
+#A line of code here that would provide counts for each department. For instance, n if department = Spanish, and then n if department = Persian, and so forth
+```
