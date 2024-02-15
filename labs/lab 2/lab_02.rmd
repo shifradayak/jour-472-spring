@@ -64,7 +64,7 @@ fall_2023_courses <- umd_courses |>
 ```
 
 **Q4.** Using the Maryland campaign expenses data, change the datatype of the expenditure_date column so that it is a date and not a chr, saving the result as the same dataframe. Then create a new column for the month based on expenditure_date. Then write code that shows total amount spent each month by Wes Moore's committee (you'll need to search the data to find the exact name). Write a sentence describing the pattern of spending over time.
-**A4.**
+**A4.**: On average, the Moore committee's spending has increased over time, despite occasional dips from month to month.
 
 ```{r}
 maryland_expenses |> 
@@ -78,15 +78,33 @@ maryland_expenses |>
 ```
 
 **Q5.** Using case_when(), create a column in the Maryland expenses data called `spending_location` indicating whether each record spent money in Maryland or outside Maryland. For records that are in Maryland, make the new column's value "In-state" and for the others, make it "Out of state". Then write code that shows the total amount of money spent in each category and describe the results. You can do this in one statement or break it up into two statements (saving the new column to your dataframe).
-**A5**
+**A5**: $77,723,146 was spent in-state and $51,565,601 was spent out-of-state.
 
 ```{r}
-summarize(total_amount = sum(amount, na.rm+T))
+maryland_expenses_with_state <- maryland_expenses |>
+  mutate (
+    spending_location = case_when (
+      str_detect (address, " Maryland ") ~ "In-state",
+      .default = "Out-of-state"
+    )
+  ) |>
+  group_by(spending_location) |>
+  summarise (
+    total_amount = sum(amount, na.rm=T)
+  )
 ```
 
 
 **Q6.** Choose your own adventure: using either the UMD courses or campaign expenses data, ask and answer a question that is different than the previous ones. You can use one of the ones you provided in the pre_lab.
-**A6.**
+**A6.** I decided to figure out the answer to the following question: What spendng category did Jim Rosapepe's candidate committee spend its highest percentage of expenditures on in 2021 and 2022? I first filtered the data to only show Rosapepe's candidate committee's expenditures, making sure to include the name of the committee exactly as it appeared in the dataset (with an extra space between words). Then, I grouped by expense category and summarized that to see the amount spent by the committee in each category. The results showed me that Rosapepe's candidate committee spent the most on transfers out to other Maryland treasurers, which made up $113,450 of their total spending.
 
 ```{r}
+maryland_expenses |>
+  filter(committee_name == "Rosapepe  Jim Friends Of") |>
+  group_by (expense_category) |>
+  summarise (
+    total_spent = sum(amount)
+  ) |>
+  arrange(desc(total_spent))
+  
 ```
