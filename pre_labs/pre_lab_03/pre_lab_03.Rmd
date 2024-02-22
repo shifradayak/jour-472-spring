@@ -287,10 +287,11 @@ cleaned_md_grants_loans
 ### Task 11: Answer our question!
 
 **Task** Write and run code to answer our original question: which zip code has gotten the most amount of money from the Maryland Tourism Board? Does that zip code make sense to you?
-**Answer**: The zip code 20001 has gotten the most amount of money from the state tourism board, having received $5,094,146,889.61, or $5 billion dollars. This zip code makes sense to me on a numerical level, but I looked it up and it says it's located in central Washington, D.C., which doesn't make sense — why would a D.C. zip code receive grant and loan money from the Maryland tourism board? 
+**Answer**: The zip code that has gotten the most from the Maryland Tourism Board is 21202, which has received $8,464,101. This zip code is in Baltimore. This makes sense. 
 
 ```{r}
 cleaned_md_grants_loans |>
+  filter(str_detect(source, "MARYLAND TOURISM BOARD")) |>
   group_by(zip5) |>
   summarise (
     sum_zips_amount = sum(amount)
