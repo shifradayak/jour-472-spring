@@ -1,0 +1,122 @@
+---
+title: "Reverse Engineering Project"
+author: "Shifra Dayak, Benjamin Ferraro, Tim Williams"
+date: "3/4/24"
+output:
+  html_document:
+    theme: cerulean
+    highlight: pygments
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+In this notebook, we are reverse engineering the story, [Her Baby Died After Hurricane Katrina. Was It a Crime?](https://www.themarshallproject.org/2021/12/16/her-baby-died-after-hurricane-katrina)
+
+## Load libraries
+
+Loading required libraries for this analysis.
+
+```{r echo=FALSE, message=FALSE}
+# Turn off scientific notation
+options(scipen=999)
+library(tidyverse)
+library(lubridate)
+library(janitor)
+
+```
+
+## Load and Cleaning Data
+
+In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data. 
+
+```{r}
+# Load required data
+louisiana_parole <- read_csv("data/lousiana_life_without_parole_sept_2021.csv") |>
+
+# Path to data should be loaded from folder "data" i.e. read_csv("data/name_of_data.csv")
+
+# Clean required data and prepare for analysis if needed. 
+clean_names()
+
+
+```
+
+## Sentences to Engineer
+In this notebook, we are reverse engineering five sentences from the story.
+
+### Sentence 1
+
+* **Sentence text**: Nearly 4,200 men and women are serving lifetime sentences in the state, for crimes that range from homicide and rape to rarer cases of repeat purse snatchings and child neglect, an investigation by The Marshall Project and The Times-Picayune | The Advocate found.
+* **Analysis summary**: Since the csv data already was entirely made up of items representing peole serving lifetime sentences, we didn't need to do any manipulation there. It listed the same prisoners multiple times in some cases, since some of them were imprisoned on multiple charges, so we wanted to just find the unique number of people, which we did by grouping the data by their identification numbers and then seeing how many rows resulted. We were able to confirm the finding — there were 4,177 resulting rows, which lines up with the "nearly 4,200" people cited by the Marshall Project.
+
+```{r}
+# Put code to reverse engineer sentence here
+deduped_louisiana_parole <- louisiana_parole |>
+group_by(doc_number) |>
+  summarise(
+    number_of_counts = n()
+  )
+
+# Display results of code below this codeblock
+
+deduped_louisiana_parole
+
+```
+
+### Sentence 2
+
+* **Sentence text**: [Paste in sentence to engineer here]
+* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+
+```{r}
+# Put code to reverse engineer sentence here
+
+# Display results of code below this codeblock
+
+```
+
+### Sentence 3
+
+* **Sentence text**: [Paste in sentence to engineer here]
+* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+
+```{r}
+# Put code to reverse engineer sentence here
+
+# Display results of code below this codeblock
+
+```
+
+### Sentence 4
+
+* **Sentence text**: [Paste in sentence to engineer here]
+* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+
+```{r}
+# Put code to reverse engineer sentence here
+
+# Display results of code below this codeblock
+
+```
+
+### Sentence 5
+
+* **Sentence text**: [Paste in sentence to engineer here]
+* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+
+```{r}
+# Put code to reverse engineer sentence here
+
+# Display results of code below this codeblock
+
+```
+
+-30-
