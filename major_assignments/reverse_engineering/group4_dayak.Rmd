@@ -73,7 +73,7 @@ deduped_louisiana_parole
 
 ### Sentence 2
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: More than half of the people serving life in Louisiana were convicted of second-degree murder, our investigation found.
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
 
 ```{r}
