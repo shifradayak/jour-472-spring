@@ -74,22 +74,41 @@ deduped_louisiana_parole
 ### Sentence 2
 
 * **Sentence text**: More than half of the people serving life in Louisiana were convicted of second-degree murder, our investigation found.
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Analysis summary**: I first filtered so only second degree murder charges were displayed. Then, I wanted to count the number of people who had been charged, rather than the number of individual charges (since some people were convicted of more than one second-degree murder charge), so I grouped the dataset by the doc_id column.
 
 ```{r}
 # Put code to reverse engineer sentence here
+life_charges <- louisiana_parole |>
+  filter(str_detect(offenses,"SECOND DEGREE MURDER")) |>
+  group_by(doc_number) |>
+  summarise (
+    second_degree_murder_number = n()
+  )
 
 # Display results of code below this codeblock
-
+life_charges
 ```
 
 ### Sentence 3
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: Over three-quarters of the 124 women serving life [were convicted of second-degree murder].
+* **Analysis summary**: By filtering out just female inmates and grouping by their DOC number to get rid of any duplicates due to multiple charges, the first few lines of code confirm that 124 women in Louisiana are serving life. The second set of lines of code filters out women serving sentences for second degree murder, and then again groups them by the DOC number to get rid of duplicate people in the dataset. By counting how many people fit these criteria, we can see that 96 women — which is more than three-quarters of 124 — are serving life for second degree murder convictions.
 
 ```{r}
 # Put code to reverse engineer sentence here
+louisiana_parole |>
+  filter(gender == "F") |>
+  group_by (doc_number)|>
+  summarise (
+    women_serving_life = n()
+  )
+
+louisiana_parole |>
+  filter(gender == "F" & offenses == "SECOND DEGREE MURDER") |>
+  group_by(doc_number) |>
+  summarise (
+    women_serving_life_second_degree = n()
+  )
 
 # Display results of code below this codeblock
 
