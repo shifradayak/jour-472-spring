@@ -39,7 +39,7 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 ```{r}
 # Load required data
-louisiana_parole <- read_csv("data/lousiana_life_without_parole_sept_2021.csv") |>
+louisiana_parole <- read_csv("data/parole-cleaned-open-refine.csv") |>
 
 # Path to data should be loaded from folder "data" i.e. read_csv("data/name_of_data.csv")
 
@@ -55,14 +55,14 @@ In this notebook, we are reverse engineering five sentences from the story.
 ### Sentence 1
 
 * **Sentence text**: Nearly 4,200 men and women are serving lifetime sentences in the state, for crimes that range from homicide and rape to rarer cases of repeat purse snatchings and child neglect, an investigation by The Marshall Project and The Times-Picayune | The Advocate found.
-* **Analysis summary**: Since the csv data already was entirely made up of items representing peole serving lifetime sentences, we didn't need to do any manipulation there. It listed the same prisoners multiple times in some cases, since some of them were imprisoned on multiple charges, so we wanted to just find the unique number of people, which we did by grouping the data by their identification numbers and then seeing how many rows resulted. We were able to confirm the finding — there were 4,177 resulting rows, which lines up with the "nearly 4,200" people cited by the Marshall Project.
+* **Analysis summary**: This is a pretty straightforward count of the  Department of Corrections ID numbers for charges for those serving life sentences. The distinct function is needed because some prisoners have multiple charges. The exact number appears to be 4,177 people.
 
 ```{r}
 # Put code to reverse engineer sentence here
 deduped_louisiana_parole <- louisiana_parole |>
-group_by(doc_number) |>
+distinct(doc_number) |>
   summarise(
-    number_of_counts = n()
+    distinct_people = n()
   )
 
 # Display results of code below this codeblock
@@ -74,16 +74,17 @@ deduped_louisiana_parole
 ### Sentence 2
 
 * **Sentence text**: More than half of the people serving life in Louisiana were convicted of second-degree murder, our investigation found.
-* **Analysis summary**: I first filtered so only second degree murder charges were displayed. Then, I wanted to count the number of people who had been charged, rather than the number of individual charges (since some people were convicted of more than one second-degree murder charge), so I grouped the dataset by the doc_id column.
+* **Analysis summary**: Filtering by the second-degree murder offense and then grouping and counting the doc numbers, we find that 2,242 of those serving life sentences have at least one second-degree murder conviction, which is about 54 percent of the 4,177 total.
 
 ```{r}
 # Put code to reverse engineer sentence here
 life_charges <- louisiana_parole |>
-  filter(str_detect(offenses,"SECOND DEGREE MURDER")) |>
+  filter(offenses == "SECOND DEGREE MURDER") |>
   group_by(doc_number) |>
   summarise (
-    second_degree_murder_number = n()
-  )
+    count = n()
+  ) |>
+  summarise(n())
 
 # Display results of code below this codeblock
 life_charges
@@ -91,36 +92,53 @@ life_charges
 
 ### Sentence 3
 
-* **Sentence text**: Over three-quarters of the 124 women serving life [were convicted of second-degree murder].
-* **Analysis summary**: By filtering out just female inmates and grouping by their DOC number to get rid of any duplicates due to multiple charges, the first few lines of code confirm that 124 women in Louisiana are serving life. The second set of lines of code filters out women serving sentences for second degree murder, and then again groups them by the DOC number to get rid of duplicate people in the dataset. By counting how many people fit these criteria, we can see that 96 women — which is more than three-quarters of 124 — are serving life for second degree murder convictions.
+* **Sentence text**: "... including over three-quarters of the 124 women serving life (parole is forbidden for almost all life sentences in the state)."
+* **Analysis summary**: Using the filter and group by functions, we first counted the number of women serving life sentences according for second degree murder, and then divided that by the total number of women serving life sentences, which we obtained using the same functions. 77 percent, which is over three-quarters, fit that criteria.
 
 ```{r}
 # Put code to reverse engineer sentence here
-louisiana_parole |>
-  filter(gender == "F") |>
-  group_by (doc_number)|>
-  summarise (
-    women_serving_life = n()
-  )
 
 louisiana_parole |>
   filter(gender == "F" & offenses == "SECOND DEGREE MURDER") |>
   group_by(doc_number) |>
   summarise (
-    women_serving_life_second_degree = n()
-  )
+   count = n()
+  ) |>
+  summarise(n()) /
+  
+louisiana_parole |>
+  filter(gender == "F") |>
+  group_by (doc_number)|>
+  summarise (
+    count = n()
+  ) |>
+  summarise (n()) 
+
 
 # Display results of code below this codeblock
-
 ```
 
 ### Sentence 4
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: More than 70% of people serving life without parole are Black, according to our analysis of state data.
+* **Analysis summary**: A similar process of filtering by race, grouping by doc number to get rid of duplicates, and counting. We did this to obtain the number of Black inmates and then divided that by the total number of inmates serving life, which is about 73 percent.
 
 ```{r}
 # Put code to reverse engineer sentence here
+louisiana_parole |>
+  filter(race=="B") |>
+  group_by(doc_number) |>
+  summarise (
+    count = n()
+  ) |>
+  summarise(n())/
+
+louisiana_parole |>
+  group_by(doc_number) |>
+  summarise (
+    count = n()
+  ) |>
+  summarise(n())
 
 # Display results of code below this codeblock
 
@@ -128,11 +146,33 @@ louisiana_parole |>
 
 ### Sentence 5
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: [Statement in the data notebook appendix]: More than half of the people serving life without parole are between the ages of 40 and 60.
+* **Analysis summary**: The data values were listed in categories like "40 - 50." Writing code around the hyphens seemed like a pain, so we used OpenRefine to clean them. Then we grouped by doc number to get rid of duplicate inmates, counted the number of inmates in the 40 to 50 category and 50 to 60 category, and added those categories to get 2,273 inmates. Then we divided that by another block of code returning the total number of inmates, to find that those age categories make up about 54 percent of the total inmates in the data set.
 
 ```{r}
 # Put code to reverse engineer sentence here
+(louisiana_parole |>
+  filter(bucket_age =="40 to 50") |>
+  group_by(doc_number) |>
+  summarise(
+    count=n()
+    ) |>
+  summarise(n()) +
+
+louisiana_parole |>
+  filter(bucket_age=="50 to 60") |>
+  group_by(doc_number) |>
+  summarise(
+    count=n()
+    ) |>
+  summarise(n()) ) /
+  
+louisiana_parole |>
+  group_by(doc_number) |>
+  summarise (
+    count= n()
+  ) |>
+  summarise(n())
 
 # Display results of code below this codeblock
 
