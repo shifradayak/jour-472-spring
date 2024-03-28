@@ -40,6 +40,8 @@ In this section, describe the source of the data, write a basic data dictionary 
 ```{r}
 # Load required data
 louisiana_parole <- read_csv("data/parole-cleaned-open-refine.csv") |>
+  
+#Cleaned bucket_age column in Open Refine (see sentence 5 for explanation)
 
 # Path to data should be loaded from folder "data" i.e. read_csv("data/name_of_data.csv")
 
