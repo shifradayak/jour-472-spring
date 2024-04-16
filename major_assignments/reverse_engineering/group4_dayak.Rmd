@@ -179,5 +179,9 @@ louisiana_parole |>
 # Display results of code below this codeblock
 
 ```
+```{r}
+louisiana_parole  
+
+```
 
 -30-
