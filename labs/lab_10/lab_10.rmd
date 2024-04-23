@@ -160,7 +160,7 @@ census_counties <- get_acs(geography = "county",
 ```{r}
 #Calculate per capita rate for March 2023
 
-#Joining census data with ev data 
+#Joining census data with ev data — this isn't working for some reason
 evs_and_population <- ev_and_counties |> inner_join(census_counties, by=("geoid"))
 ```
 
