@@ -95,7 +95,14 @@ county_outages <- read_csv("data/county_outages_march2023.csv") |>
 
 ```{r}
 #Merge geometries with outage data
-outages_and_counties <- md_counties |> left_join(county_outages, join_by(name==county))
+
+#Fixing repeat Baltimore 
+md_counties_fixed <- md_counties |>
+  mutate(name = case_when(
+    namelsad == "Baltimore city" ~ "Baltimore City", 
+    .default = name)) 
+
+outages_and_counties <- md_counties_fixed |> left_join(county_outages, join_by(name==county))
 
 ```
 
@@ -126,7 +133,7 @@ ev_usage <- read_csv("data/ev_2020_2023.csv") |>
 
 ```{r}
 #Merge geometries with EV data
-ev_and_counties <- md_counties |> left_join(ev_usage, join_by(name==county)) |>
+ev_and_counties <- md_counties_fixed |> left_join(ev_usage, join_by(name==county)) |>
   arrange(desc(percent_change))
 
 ```
@@ -152,7 +159,9 @@ census_counties <- get_acs(geography = "county",
 
 ```{r}
 #Calculate per capita rate for March 2023
-population_and_evs <- census_counties |> inner_join(ev_and_counties, join_by(geoid))
+
+#Joining census data with ev data 
+evs_and_population <- ev_and_counties |> inner_join(census_counties, by=("geoid"))
 ```
 
 ```{r}
