@@ -122,7 +122,7 @@ Then, calculate a per capita rate of electric & hybrid vehicles using the March 
 
 Finally, make a second county map showing the per capita rate. What counties stand out on this map? How is it different from the first one you made?
 
-**A3.**: Caroline County stands out to me because it's had the biggest growth in EV usage. Dorchester and Washington counties also stand out because they've had the lowest rate of growth. I want to know what's spurred these changes, or lack thereof, and if there have been any county-level policies in these places regarding EVs that have impacted the changes.
+**A3.**: Caroline County stands out to me because it's had the biggest growth in EV usage. Dorchester and Washington counties also stand out because they've had the lowest rate of growth. I want to know what's spurred these changes, or lack thereof, and if there have been any county-level policies in these places regarding EVs that have impacted the changes. In the per capita map, Howard and Montgomery counties stand out because of high per capita usage of EVs as compared to Somerset County, which has the lowest per capita usage in the state. The second map is different than the first because it indicates information about how widespread EV usage is in a given place.
 
 ```{r}
 #Read data and calculate change of EV vehicles
@@ -152,19 +152,27 @@ ggplot() +
 census_counties <- get_acs(geography = "county",
               variables = c(population = "B01001_001"),
               year = 2021,
-              state = "MD",
-              geometry = TRUE) |>
+              state = "MD") |>
   clean_names()
 ```
 
 ```{r}
-#Calculate per capita rate for March 2023
-
 #Joining census data with ev data — this isn't working for some reason
-evs_and_population <- ev_and_counties |> inner_join(census_counties, by=("geoid"))
+evs_and_population <- ev_and_counties |> inner_join(census_counties, by=("geoid")) 
+
+```
+```{r}
+#Calculate per capita rate for March 2023
+evs_and_population <- evs_and_population |>
+  mutate(per_capita_usage = (march_2023/estimate)) |>
+  arrange(desc(per_capita_usage))
 ```
 
 ```{r}
 #Map out the per capita rate
+ggplot() +
+  geom_sf(data=evs_and_population, aes(fill=per_capita_usage)) +
+  scale_fill_viridis_c(option="magma", trans="log")
+
 
 ```

@@ -1,0 +1,56 @@
+---
+title: "data_analysis_basketball"
+output: html_document
+date: "2024-04-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(janitor)
+library(lubridate)
+library(tidyverse)
+```
+```{r}
+roster_23_24 <- read_csv("data/wbb_rosters_2023_24.csv")
+roster_22_23 <- read_csv("data/wbb_rosters_2022_23.csv")
+roster_21_22 <- read_csv("data/wbb_rosters_2021_22.csv")
+roster_20_21 <- read_csv("data/wbb_rosters_2020_21.csv")
+```
+```{r}
+#Appending rosters for all four seasons 
+all_rosters <- bind_rows(roster_20_21, roster_21_22, roster_22_23, roster_23_24)
+
+```
+
+```{r}
+#Changing column types to character
+
+mutate(
+  ncaa_id = as.character(ncaa_id)
+)
+```
+
+Deliverable 2:
+
+Data limitations
+- The four rosters are inconsistent in the number of columns they have — we think this probably won't matter, because all the columns we're working with are present in all the datasets, but that is something to consider limitation-wise
+-Timeframe should be fine 
+-Some players here and there are missing certain pieces of information
+- Things we need definitions for 
+-For the redshirt column, it would be good to get clarification on how that was documented in the data. Did the players marked as having redshirted redshirt in the season that the dataset represents, or does that just indicate that they redshirted at any point in their personal college career?
+
+
+1. What states produced the most NCAA recruits for the 2023-2024 season? 
+
+2. What schools produced the most NCAA recruits for the 2023-24 season? Are they mostly public or private?
+
+3. Are there changes between school years in terms of how many student athletes outside of the U.S. are on the NCAA roster? 
+
+4. What percentage of students on the 2023-24 roster are redshirts, and are players in a certain year more likely to redshirt?
+
+5. Are there differences in average height between the different divisions? Also, if we’re able to join this with ranking data from the season, is there a correlation between higher/lower average heights at different schools and how well those teams did?
+
