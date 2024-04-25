@@ -217,7 +217,7 @@ Once again we get a list of two as our result. In this case, we don't want to is
 
 ### Task 10: Isolate the list of `li` tags inside the HTML using `html_elements`
 **Task** Run the following code in the gray-colored codeblock below to find the <li> tags. What does the output suggest about how many <ul> tags there are in the HTML source?
-**Answer**: It suggests that there are three <ul> tag, since all of these <li> tags seem to be nested under one of three groupings/item types (links, menu items,and classes).
+**Answer**: It suggests that there are three <ul> tags, since all of these <li> tags seem to be nested under one of three groupings/item types (links, menu items,and classes).
 
 ```{r}
 osp_results |> html_elements('li')
