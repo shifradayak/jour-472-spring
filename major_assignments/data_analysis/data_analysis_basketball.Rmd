@@ -13,6 +13,8 @@ library(dplyr)
 library(janitor)
 library(lubridate)
 library(tidyverse)
+library(tidycensus)
+census_api_key("ef5457f8a2b11d9eecec191d6867f76f96db192b")
 ```
 ```{r}
 roster_23_24 <- read_csv("data/wbb_rosters_2023_24.csv")
@@ -36,12 +38,12 @@ mutate(
 )
 ```
 
-Deliverable 2:
 
 Data limitations
 - The four rosters are inconsistent in the number of columns they have — we think this probably won't matter, because all the columns that we specifically are working with are present in all the datasets, but that is something to consider limitation-wise
 - For some players who are graduate students, the data lists their former (undergraduate) college under the high school column. This is just a quirk of how the data is recorded, and won't really impact us — because it's such a rare case, these colleges will likely show up at the bottom of the list when we're analyzing what high schools produced the most players, and thus won't factor into our most important results. But it's something to keep an eye out for.
 -Some players here and there are missing certain pieces of information. Most instances make sense — for instance, high school is mostly not listed for international players. Other pieces of information like primary position are also missing, but those shouldn't impact our analysis because we're not looking at those columns. But there are also some players that are missing more important recorded information like heights — when analyzing height in question 5, how should we go about this? We could just drop those players from the analysis and note that we did that in a written explanation in our document. 
+-As shown in our process for solving question 2, the way that high schools are recorded is inconsistent. Some high schools in different states with the same name show up stylized the same way in the hs_clean column, and some high schools that are the same showup differently in that column (e.g. Centennial vs. Centennial HS). This requires us to be creative and do some approximation and manual checking when figuring out the answer to question 2, which we explain in code comments under that question. This also means that the result for that question may not be 100% accurate, and rather, is an approximation using the constraints we're given.
 
 
 Timeframe
@@ -77,17 +79,141 @@ Basic exploratory analysis shows that...
 - When all the rosters are combined, the appended dataset shows that there have been 54,432 players across the past four seasons
 
 
-1. What states produced the most NCAA recruits for the 2023-2024 season? 
+1. What states produced the most NCAA recruits for the 2023-2024 season? What about states that produced the most players per capita? 
+
+We want to look at this question to see if there are trends in higher-performing states athletically in the U.S. — it would be interesting to form hypotheses about what factors might drive some states to produce more athletes than others. 
 ```{r}
+roster_23_24 |>
+#For players who come from places outside the U.S., state_clean is listed as NA (because they don't have a state). This line of code will drop all those instances since we are only looking at American players for this question 
+  drop_na(state_clean) |>
+  group_by(state_clean)|>
+  summarise (
+    state_count = n()
+  ) |>
+  arrange(desc(state_count)) 
+#We can see here that Texas produced the most players, followed by Pennsylvania and New York. Guam, the Virgin Islands and Puerto Rico produced the fewest players, which is also expected given that those are small territories.  
+```
+
+```{r}
+#But looking at numbers alone may not give us a great sense of things. For instance, Texas is one of the more populated states, so it makes sense that it would produce more players. Instead, we're going to try and look at the per capita rate, by attaching a dataset with the population of each state. We call this dataset by using the Census API. This will give us a better sense of the states that produced the most players relative to their size and population.
+
+
+state_population <- get_acs(geography = "state", 
+        variables = c(pop18plus = "B09021_001"), 
+        year= 2019) 
+
+#Now we're going to group by state
+state_grouped_23_24_roster <- roster_23_24 |>
+  group_by(state_clean) |>
+  summarise (
+    state_count = n()
+    ) 
+
+#We don't have the same number of rows to join on here, so instead of using a join function, we're going to add a column to the roster table that will apply the appropriate population number depending on what state is in each row, based on the numbers we have in the census data. 
+state_grouped_23_24_roster <- state_grouped_23_24_roster |>
+  mutate (state_population = 
+            case_when (state_clean == "AL"  ~ "3664292",
+              state_clean == "AK" ~ "526228", 
+              state_clean == "AZ" ~ "5260156", 
+              state_clean == "AR" ~ "2213525", 
+              state_clean == "CA" ~ "29461376", 
+              state_clean == "CO" ~ "4232619", 
+              state_clean == "CT" ~ "2719834", 
+              state_clean == "DE" ~ "729261",
+              state_clean == "FL" ~ "16299441",
+              state_clean == "GA" ~ "7642687",
+              state_clean == "HI" ~ "1075150",
+              state_clean == "ID" ~ "1247701",
+              state_clean == "IL" ~ "9587003",
+              state_clean == "IN" ~ "4909304",
+              state_clean == "IA" ~ "2315180",
+              state_clean == "KS" ~ "2121274",
+              state_clean == "KY" ~ "3311138",
+              state_clean == "LA" ~ "3433934",
+              state_clean == "ME" ~ "1047786",
+              state_clean == "MD" ~ "4539162",
+              state_clean == "MA" ~ "5236114",
+              state_clean == "MI" ~ "7564959",
+              state_clean == "MN" ~ "4140001",
+              state_clean == "MS" ~ "2178480",
+              state_clean == "MT" ~ "794994",
+              state_clean == "MO" ~ "4553930",
+              state_clean == "NE" ~ "1390810",
+              state_clean == "NV" ~ "2254884",
+              state_clean == "NH" ~ "1046879",
+              state_clean == "NJ" ~ "6738737",
+              state_clean == "NM" ~ "1562483",
+              state_clean == "NY" ~ "14914734",
+              state_clean == "NC" ~ "7696427",
+              state_clean == "ND" ~ "556289",
+              state_clean == "OH" ~ "8740197",
+              state_clean == "OK" ~ "2868522",
+              state_clean == "OR" ~ "3176204",
+              state_clean == "PA" ~ "9716564",
+              state_clean == "RI" ~ "809114",
+              state_clean == "SC" ~ "3785555",
+              state_clean == "SD" ~ "623888",
+              state_clean == "TN" ~ "5049828",
+              state_clean == "TX" ~ "20337909",
+              state_clean == "UT" ~ "2129171",
+              state_clean == "VT" ~ "482734",
+              state_clean == "VA" ~ "6348948",
+              state_clean == "WA" ~ "5616974",
+              state_clean == "WV" ~ "1401858",
+              state_clean == "WI" ~ "4365949",
+              state_clean == "WY" ~ "431015"
+            ))
+
+#Now we're going to drop the non-U.S.-state values
+state_grouped_23_24_roster <- state_grouped_23_24_roster |>
+  drop_na(state_population)
+
+#Now, we add a column for the per capita rate and arrange the table by highest to lowest per capita rate.
+state_grouped_23_24_roster <- state_grouped_23_24_roster |>
+ mutate(per_capita_players = as.numeric(state_count)/as.numeric(state_population)) |>
+ mutate(per_capita_players = per_capita_players *100000) |>
+  arrange(desc(per_capita_players))
 
 ```
 
+Answer: The top five states to produce players numbers-wise are Texas, Pennsylvania, New York, California, Ohio and Illinois. When we look at the rates of players per 100,000 residents, the top states are Minnesota, Vermont, South Dakota, Wisconsin and Pennsylvania. It's interesting that there's not much overlap in these two measures — although states like Texas and New York may produce a lot of players, they don't produce an above-average amount given their populations. But seeing that smaller states like Vermont and South Dakota produce a lot of players indicates that despite a lack of population, these states are exceptional in sending women to NCAA basketball teams.
 
-2. What schools produced the most NCAA recruits for the 2023-24 season? Are they mostly public or private?
+
+2. What high schools produced the most NCAA recruits for the 2023-24 season? Are they mostly public or private?
+
+We're looking at this question to see if there are any exceptional high schools in the United States. We're also curious about if the top athlete-producing schools tend to lean public or private — that might raise some indications about how socioeconomic status and available educational resources may influence the likelihood of a player going to the NCAA. 
+
 ```{r}
-
+roster_23_24 |>
+#For players who come from places outside the U.S., hs_clean often isn't listed. We're going to drop these instances since we're only interested in the high schools that are included in the data 
+  drop_na(hs_clean)|>
+  group_by(hs_clean)|>
+  summarise(
+    high_schools = n()
+  ) |>
+  arrange(desc(high_schools)) |>
+#For the scope of our project, let's just look at the top 10 high schools. This line of code actually gives us 12 high schools, but that's because there are some that produced the same amount of players as others.
+  top_n(10) 
 ```
 
+```{r}
+#We run into an issue here where some high schools from different states are stylized the same way in the hs_clean column, conflating different high schools in the same count. So we're going to create a new column distinguishing these by high school name AND state instead, and then group by that to get a more accurate result. 
+
+roster_23_24 |>
+  drop_na(hs_clean)|>
+  mutate(hs_and_state = paste(hs_clean, "-", hometown_clean)) |>
+  group_by(hs_and_state)|>
+  summarise (
+    hs_count = n()
+  ) |>
+  arrange(desc(hs_count)) |>
+  top_n(10)
+
+#After examining these results, we see another, different issue. While this gets rid of the multiple Centennial high schools in different states being lumped together, for instance, it poses a different problem. It omits certain schools that seem to be boarding schools, because all the players from those schools have different hometowns listed. But schools like New Hope and IMG Academy are some of the top contenders. To reconcile these issues, we opted to hand-compare the top 10 results from each of the blocks of code, to compile our own list of the actual top 10 schools. The list is below this codeblock. One limitation: these may not be entirely accurate. Based on this data alone (since people may have a different hometown than where they went to high school), it's hard to tell what high schools should be taken out, because it's unclear if there are multiple high schools with the same name. But this is an approximation based on our best guesses. 
+```
+The top 10 high schools that produced players are: New Hope Academy, IMG Academy, Notre Dame Academy, Sacred Heart Academy, Trinity, Example Academy, DeSoto High School, Dunmore, South Mecklenburg, and Centennial (in Las Vegas).
+
+After looking at the result from this code and conducting outside research, we can see that 6  are private schools and 4  are public schools. The top 3 high schools that produce players are all private schools, showing a trend that private schools tend to produce more NCAA players than public schools. 
 
 3. Are there changes between school years in terms of how many student athletes outside of the U.S. are on the NCAA roster? 
 ```{r}
