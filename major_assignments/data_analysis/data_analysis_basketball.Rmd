@@ -81,7 +81,7 @@ Basic exploratory analysis shows that...
 
 1. What states produced the most NCAA recruits for the 2023-2024 season? What about states that produced the most players per capita? 
 
-We want to look at this question to see if there are trends in higher-performing states athletically in the U.S. — it would be interesting to form hypotheses about what factors might drive some states to produce more athletes than others. 
+Why we're interested: We want to look at this question to see if there are trends in higher-performing states athletically in the U.S. — it would be interesting to form hypotheses about what factors might drive some states to produce more athletes than others. 
 ```{r}
 roster_23_24 |>
 #For players who come from places outside the U.S., state_clean is listed as NA (because they don't have a state). This line of code will drop all those instances since we are only looking at American players for this question 
@@ -181,7 +181,7 @@ Answer: The top five states to produce players numbers-wise are Texas, Pennsylva
 
 2. What high schools produced the most NCAA recruits for the 2023-24 season? Are they mostly public or private?
 
-We're looking at this question to see if there are any exceptional high schools in the United States. We're also curious about if the top athlete-producing schools tend to lean public or private — that might raise some indications about how socioeconomic status and available educational resources may influence the likelihood of a player going to the NCAA. 
+Why we're interested: We're looking at this question to see if there are any exceptional high schools in the United States. We're also curious about if the top athlete-producing schools tend to lean public or private — that might raise some indications about how socioeconomic status and available educational resources may influence the likelihood of a player going to the NCAA. 
 
 ```{r}
 roster_23_24 |>
@@ -211,23 +211,74 @@ roster_23_24 |>
 
 #After examining these results, we see another, different issue. While this gets rid of the multiple Centennial high schools in different states being lumped together, for instance, it poses a different problem. It omits certain schools that seem to be boarding schools, because all the players from those schools have different hometowns listed. But schools like New Hope and IMG Academy are some of the top contenders. To reconcile these issues, we opted to hand-compare the top 10 results from each of the blocks of code, to compile our own list of the actual top 10 schools. The list is below this codeblock. One limitation: these may not be entirely accurate. Based on this data alone (since people may have a different hometown than where they went to high school), it's hard to tell what high schools should be taken out, because it's unclear if there are multiple high schools with the same name. But this is an approximation based on our best guesses. 
 ```
-The top 10 high schools that produced players are: New Hope Academy, IMG Academy, Notre Dame Academy, Sacred Heart Academy, Trinity, Example Academy, DeSoto High School, Dunmore, South Mecklenburg, and Centennial (in Las Vegas).
+Answer: The top 10 high schools that produced players are: New Hope Academy, IMG Academy, Notre Dame Academy, Sacred Heart Academy, Trinity, Example Academy, DeSoto High School, Dunmore, South Mecklenburg, and Centennial (in Las Vegas).
 
 After looking at the result from this code and conducting outside research, we can see that 6  are private schools and 4  are public schools. The top 3 high schools that produce players are all private schools, showing a trend that private schools tend to produce more NCAA players than public schools. 
 
 3. Are there changes between school years in terms of how many student athletes outside of the U.S. are on the NCAA roster? 
+
+Why we're interested: It's pretty commonly known that international student-athletes in the NCAA face a lot more restrictions, like having to get a visa, being limited in the income they can make off name/image/likeness deals and so on. Despite or because of these factors, it's interesting to look into how international student involvement in women's basketball has been impacted over the years. Have more people become involved or been dissuaded from being involved, and how have those students contributed to women's basketball rosters? 
 ```{r}
 
+international_students <- all_rosters |>
+#The 2021-22 season is documented in two different ways in the data, so first we're renaming those values to fix that so the group by will be easier 
+  mutate(season = case_when (season == "2021-2022" ~ "2021-22", 
+    TRUE ~ season
+  )) |>
+#Then, since we want to only look at international students, we're filtering out all students from the USA and grouping by season to see the change in internationl numbers across seasons 
+  filter(country_clean != "USA") |>
+  group_by(season) |>
+  summarise(
+    international_count = n()
+  ) 
+
+  
+#We know from our exploratory analysis that the 2020-21 season had 13075 players drafted, the 2021-22 roster had 13645 players drafted, the 2022-23 roster had 13803 players drafted, and the 2023-24 roster had 13907 players drafted. To show the number of international students as a percentage of the total players per season, we're going to mutate using these numbers 
+international_students <- international_students |>
+  mutate(total_season_players = case_when(
+    season == "2020-21" ~ "13075",
+    season == "2021-22" ~ "13645", 
+    season == "2022-23" ~ "13803", 
+    season == "2023-24" ~ "13907" 
+    )) |>
+  mutate(international_pct = as.numeric((international_count)/as.numeric(total_season_players))*100)
+
+#To see what this trend looks like, we can make a visual 
+international_students |>
+  ggplot(aes(x=season, y=international_pct)) +
+  geom_point() 
+ 
 ```
+
+Answer: The share of international students that make up each season's NCAA women's basketball roster has grown fairly linearly from the 2020-21 season to the 2023-24 season, indicating an increase in the percentage of international students on each season's roster. 
 
 
 4. What percentage of students on the 2023-24 roster are redshirts, and are players in a certain year more likely to redshirt?
+
+Why we're interested: Since college athletes have five years to complete four seasons of their sport, they can redshirt in any year. We're interested in looking at what years are the most common 
 ```{r}
 
+redshirt_23_24 <- roster_23_24 |>
+  filter (redshirt == 1) |>
+  group_by (year_clean) |>
+  summarise (
+    redshirt_count_by_year = n()
+  ) |>
+  arrange(desc(redshirt_count_by_year)) |>
+  mutate(total_redshirts = sum(redshirt_count_by_year)) |>
+#It might provide extra insight to see redshirts in a given year as a percentage of the total number of redshirts 
+  mutate((redshirt_percentage = redshirt_count_by_year/total_redshirts)*100)
+
+redshirt_23_24
+
+#As stated in the limitations discussed above, we're unsure if the redshirt column indicates that a player redshirted in the 2023-24 season, or if it just means they redshirted at any point in their college career. We completed this question assuming that the data represents a redshirt IN the 2023-24 season (in other words, in the corresponding academic year listed in this same dataframe), but if the data was documented differently, the result for this could be wrong.
+
 ```
+Answer: In the 2023-24 year, players were most likely to redshirt during their sophomore year. Junior year followed, and then freshman year. Senior year and a player's fifth year were the least common. In terms of the most and least popular options, more than 31% more players redshirted during their sophomore year than their fifth year.
 
 
 5. Are there differences in average height between the different divisions? Also, if we’re able to join this with ranking data from the season, is there a correlation between higher/lower average heights at different schools and how well those teams did?
+
 ```{r}
 
 ```
