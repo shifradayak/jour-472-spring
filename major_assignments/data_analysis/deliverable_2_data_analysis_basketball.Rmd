@@ -257,24 +257,10 @@ Answer: The share of international students that make up each season's NCAA wome
 
 Why we're interested: Since college athletes have five years to complete four seasons of their sport, they can redshirt in any year. We're interested in looking at what years are the most common 
 ```{r}
-
-redshirt_23_24 <- roster_23_24 |>
-  filter (redshirt == 1) |>
-  group_by (year_clean) |>
-  summarise (
-    redshirt_count_by_year = n()
-  ) |>
-  arrange(desc(redshirt_count_by_year)) |>
-  mutate(total_redshirts = sum(redshirt_count_by_year)) |>
-#It might provide extra insight to see redshirts in a given year as a percentage of the total number of redshirts 
-  mutate((redshirt_percentage = redshirt_count_by_year/total_redshirts)*100)
-
-redshirt_23_24
-
-#As stated in the limitations discussed above, we're unsure if the redshirt column indicates that a player redshirted in the 2023-24 season, or if it just means they redshirted at any point in their college career. We completed this question assuming that the data represents a redshirt IN the 2023-24 season (in other words, in the corresponding academic year listed in this same dataframe), but if the data was documented differently, the result for this could be wrong.
+#Use this codeblock to take the 2023-24 roster, filter so only redshirts are shown, and then group by year. We can also mutate to create a column showing what percentage of total redshirts those in each year make up to more easily see if there's a trend.
 
 ```
-Answer: In the 2023-24 year, players were most likely to redshirt during their sophomore year. Junior year followed, and then freshman year. Senior year and a player's fifth year were the least common. In terms of the most and least popular options, more than 31% more players redshirted during their sophomore year than their fifth year.
+Answer: 
 
 
 5. Are there differences in average height between the different divisions across all seasons? Also, is there a correlation between higher/lower average heights at different schools and how well those teams did? For the second question, we'll focus on just the 2023-24 season as the most recent example 
@@ -282,20 +268,13 @@ Answer: In the 2023-24 year, players were most likely to redshirt during their s
 Why we're interested: Height is often discussed as a major factor in someone's success as a basketball player, so it'll be interesting to look at whether taller or shorter average heights hav driven players to more success (playing D1) or less success (playing D3), as well as if average height influenced how well individual teams did.
 
 ```{r}
-#Use this codeblock to group by division, and then calculate average height for each division 
-division_1_height <- all_rosters |>
-  filter(division == "I") |>
-  drop_na(total_inches) |>
-  mean(total_inches)
-
-division_1_height
-
+#Use this codeblock to group by division, and then calculate average height for each division. Is there a difference/trend? 
 
 ```
 
 ```{r}
 #Use this codeblock to group by school, and then calculate average height at each school
-#Then we'll look up rankings from the 2023-24 season and compare the tallest/shortest teams with these rankings to see if there are any relationships we can figure out 
+#Then we'll look up rankings from the 2023-24 season and compare the tallest/shortest teams with these rankings to see if there are any relationships we can figure out. E.g. did the tallest average team play significantly better this season than the shortest average team? 
 
 ```
 
