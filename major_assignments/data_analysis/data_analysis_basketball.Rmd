@@ -250,13 +250,14 @@ division_heights <- all_rosters |>
 
 ```{r}
 #Use this codeblock to group by school, and then calculate average height at each school
-#Then we'll look up rankings from the 2023-24 season and compare the tallest/shortest teams with these rankings to see if there are any relationships we can figure out 
+#Then we'll look up rankings from the 2023-24 season and compare the tallest/shortest teams with these rankings to see if there are any relationships we can figure out. Since rankings are primarily focused on Division I, we'll filter out just Division I schools 
 
 team_heights <- roster_23_24 |>
-  filter(!is.na(total_inches)) |>
+  filter(!is.na(total_inches)) |> 
+  filter(division == "I") |>
   group_by(team) |>
   summarize(mean_height = mean(total_inches, na.rm = TRUE)) |>
 arrange(desc(mean_height))
 ```
 
-Answer: There are differences in average height across divisions. In Division III the average height (in inches) was 68.06 in. In Division II the mean was 69.15 in — slightly taller — and in Division I, the average at 70.55, marking the tallest average height. This shows a correlation between "stronger" players and taller heights. When zooming in on the 2023-24 season and looking at average height by team, seven out of the 10 tallest teams on average were ranked in the top 25 (https://www.espn.com/womens-college-basketball/rankings) in the NCAA for the season. In contrast, none of the shortest 10 teams on average were in the top 25. This shows that evidently, some of the tallest teams in the NCAA are also some of the best performing teams, whereas some of the shortest teams are not the best-performing. 
+Answer: There are differences in average height across divisions. In Division III the average height (in inches) was 68.06 in. In Division II the mean was 69.15 in — slightly taller — and in Division I, the average at 70.55, marking the tallest average height. This shows a correlation between "stronger" players and taller heights. When zooming in on the 2023-24 season and looking at average height by teams in Division I, seven out of the 10 tallest teams on average were ranked in the top 25 of the division (https://www.espn.com/womens-college-basketball/rankings) in the NCAA for the season. In contrast, none of the shortest 10 teams on average were in the top 25 for the division. This shows that evidently, some of the tallest teams in the NCAA are also some of the best performing teams, whereas some of the shortest teams are not the best-performing. 
