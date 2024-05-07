@@ -79,7 +79,7 @@ Basic exploratory analysis shows that...
 - When all the rosters are combined, the appended dataset shows that there have been 54,432 players across the past four seasons
 
 
-1. What states produced the most NCAA recruits for the 2023-2024 season? What about states that produced the most players per capita? 
+1. What states produced the most NCAA players for the 2023-2024 season? What about states that produced the most players per capita? 
 
 Why we're interested: We want to look at this question to see if there are trends in higher-performing states athletically in the U.S. — it would be interesting to form hypotheses about what factors might drive some states to produce more athletes than others. 
 ```{r}
@@ -97,86 +97,44 @@ roster_23_24 |>
 ```{r}
 #But looking at numbers alone may not give us a great sense of things. For instance, Texas is one of the more populated states, so it makes sense that it would produce more players. Instead, we're going to try and look at the per capita rate, by attaching a dataset with the population of each state. We call this dataset by using the Census API. This will give us a better sense of the states that produced the most players relative to their size and population.
 
+#This is us pulling state abbreviations from the Census data so we can join that, which will then make it easier to join our population data (which we get in the next step) to the roster data 
+data(fips_codes) 
+
+state_abbrev <- fips_codes |> 
+  select(state,state_name,state_code) |> 
+  distinct()
 
 state_population <- get_acs(geography = "state", 
         variables = c(pop18plus = "B09021_001"), 
-        year= 2019) 
+        year= 2019) |>
+  clean_names() |>
+  rename(state_name = name)
 
-#Now we're going to group by state
-state_grouped_23_24_roster <- roster_23_24 |>
+#Now we're going to join these so we can see population based on state abbreviation, rather than full state name 
+state_abbrev_population <- state_abbrev|>
+ inner_join(state_population, by=c("state_name"))
+
+#Now, we're joining this new table to the 2023-24 roster so we can attach populations to the number of players produced in each state. The last line of code also removes all players not from a state (international players), because we don't care about those numbers in this question
+player_numbers_by_state <- roster_23_24 |>
   group_by(state_clean) |>
   summarise (
-    state_count = n()
-    ) 
+    player_count = n()
+  ) |>
+  filter(!is.na(state_clean))
 
-#We don't have the same number of rows to join on here, so instead of using a join function, we're going to add a column to the roster table that will apply the appropriate population number depending on what state is in each row, based on the numbers we have in the census data. 
-state_grouped_23_24_roster <- state_grouped_23_24_roster |>
-  mutate (state_population = 
-            case_when (state_clean == "AL"  ~ "3664292",
-              state_clean == "AK" ~ "526228", 
-              state_clean == "AZ" ~ "5260156", 
-              state_clean == "AR" ~ "2213525", 
-              state_clean == "CA" ~ "29461376", 
-              state_clean == "CO" ~ "4232619", 
-              state_clean == "CT" ~ "2719834", 
-              state_clean == "DE" ~ "729261",
-              state_clean == "FL" ~ "16299441",
-              state_clean == "GA" ~ "7642687",
-              state_clean == "HI" ~ "1075150",
-              state_clean == "ID" ~ "1247701",
-              state_clean == "IL" ~ "9587003",
-              state_clean == "IN" ~ "4909304",
-              state_clean == "IA" ~ "2315180",
-              state_clean == "KS" ~ "2121274",
-              state_clean == "KY" ~ "3311138",
-              state_clean == "LA" ~ "3433934",
-              state_clean == "ME" ~ "1047786",
-              state_clean == "MD" ~ "4539162",
-              state_clean == "MA" ~ "5236114",
-              state_clean == "MI" ~ "7564959",
-              state_clean == "MN" ~ "4140001",
-              state_clean == "MS" ~ "2178480",
-              state_clean == "MT" ~ "794994",
-              state_clean == "MO" ~ "4553930",
-              state_clean == "NE" ~ "1390810",
-              state_clean == "NV" ~ "2254884",
-              state_clean == "NH" ~ "1046879",
-              state_clean == "NJ" ~ "6738737",
-              state_clean == "NM" ~ "1562483",
-              state_clean == "NY" ~ "14914734",
-              state_clean == "NC" ~ "7696427",
-              state_clean == "ND" ~ "556289",
-              state_clean == "OH" ~ "8740197",
-              state_clean == "OK" ~ "2868522",
-              state_clean == "OR" ~ "3176204",
-              state_clean == "PA" ~ "9716564",
-              state_clean == "RI" ~ "809114",
-              state_clean == "SC" ~ "3785555",
-              state_clean == "SD" ~ "623888",
-              state_clean == "TN" ~ "5049828",
-              state_clean == "TX" ~ "20337909",
-              state_clean == "UT" ~ "2129171",
-              state_clean == "VT" ~ "482734",
-              state_clean == "VA" ~ "6348948",
-              state_clean == "WA" ~ "5616974",
-              state_clean == "WV" ~ "1401858",
-              state_clean == "WI" ~ "4365949",
-              state_clean == "WY" ~ "431015"
-            ))
+state_players_and_population <- player_numbers_by_state |>
+  left_join(state_abbrev_population, by=c("state_clean" = "state")) |>
+  rename(population = estimate) |>
+  filter(!is.na(state_name))
 
-#Now we're going to drop the non-U.S.-state values
-state_grouped_23_24_roster <- state_grouped_23_24_roster |>
-  drop_na(state_population)
-
-#Now, we add a column for the per capita rate and arrange the table by highest to lowest per capita rate.
-state_grouped_23_24_roster <- state_grouped_23_24_roster |>
- mutate(per_capita_players = as.numeric(state_count)/as.numeric(state_population)) |>
- mutate(per_capita_players = per_capita_players *100000) |>
-  arrange(desc(per_capita_players))
+#Finally, we create a new column and calculate the per capita rate of players in each state per 100,000 people 
+state_players_and_population |>
+  mutate(per_capita_rate = (player_count/population) *100,000) |>
+  arrange(desc(per_capita_rate))
 
 ```
 
-Answer: The top five states to produce players numbers-wise are Texas, Pennsylvania, New York, California, Ohio and Illinois. When we look at the rates of players per 100,000 residents, the top states are Minnesota, Vermont, South Dakota, Wisconsin and Pennsylvania. It's interesting that there's not much overlap in these two measures — although states like Texas and New York may produce a lot of players, they don't produce an above-average amount given their populations. But seeing that smaller states like Vermont and South Dakota produce a lot of players indicates that despite a lack of population, these states are exceptional in sending women to NCAA basketball teams.
+Answer: The top five states to produce players numbers-wise are Texas, Pennsylvania, New York, California, Ohio and Illinois, which is expected given that those are some of the ore populated states. For further analysis, when we look at the rates of players per 100,000 residents, the top states are Minnesota, Vermont, South Dakota, Wisconsin and Pennsylvania. It's interesting that there's not much overlap in these two measures — although states like Texas and New York may produce a lot of players, they don't produce an above-average amount given their populations. But seeing that smaller states like Vermont and South Dakota produce a lot of players indicates that despite a lack of population, these states are exceptional in sending women to NCAA basketball teams.
 
 
 2. What high schools produced the most NCAA recruits for the 2023-24 season? Are they mostly public or private?
@@ -274,22 +232,19 @@ redshirt_23_24
 #As stated in the limitations discussed above, we're unsure if the redshirt column indicates that a player redshirted in the 2023-24 season, or if it just means they redshirted at any point in their college career. We completed this question assuming that the data represents a redshirt IN the 2023-24 season (in other words, in the corresponding academic year listed in this same dataframe), but if the data was documented differently, the result for this could be wrong.
 
 ```
-Answer: In the 2023-24 year, players were most likely to redshirt during their sophomore year. Junior year followed, and then freshman year. Senior year and a player's fifth year were the least common. In terms of the most and least popular options, more than 31% more players redshirted during their sophomore year than their fifth year.
+Answer: In the 2023-24 year, players were most likely to redshirt during their sophomore year. Junior year followed, and then freshman year. Senior year and a player's fifth year were the least common. In terms of the most and least popular options, about 31% more players redshirted during their sophomore year than their fifth year.
 
 
-5. Are there differences in average height between the different divisions across all seasons? Also, is there a correlation between higher/lower average heights at different schools and how well those teams did? For the second question, we'll focus on just the 2023-24 season as the most recent example 
+5. Are there differences in average height between the different divisions across all seasons? Also, is there a correlation between higher/lower average heights at different schools and how well those teams did? For the second question, we'll focus on just the 2023-24 season as the most recent example. 
 
-Why we're interested: Height is often discussed as a major factor in someone's success as a basketball player, so it'll be interesting to look at whether taller or shorter average heights hav driven players to more success (playing D1) or less success (playing D3), as well as if average height influenced how well individual teams did.
+Why we're interested: Height is often discussed as a major factor in someone's success as a basketball player, so it'll be interesting to look at whether taller or shorter average heights have driven players to more success (playing D1) or less success (playing D3), as well as if average height influenced how well individual teams did in the most recent season.
 
 ```{r}
 #Use this codeblock to group by division, and then calculate average height for each division 
-division_1_height <- all_rosters |>
-  filter(division == "I") |>
-  drop_na(total_inches) |>
-  mean(total_inches)
-
-division_1_height
-
+division_heights <- all_rosters |>
+  filter(!is.na(division)) |>
+  group_by(division) |>
+  summarize(mean_height = mean(total_inches, na.rm = TRUE))
 
 ```
 
@@ -297,6 +252,11 @@ division_1_height
 #Use this codeblock to group by school, and then calculate average height at each school
 #Then we'll look up rankings from the 2023-24 season and compare the tallest/shortest teams with these rankings to see if there are any relationships we can figure out 
 
+team_heights <- roster_23_24 |>
+  filter(!is.na(total_inches)) |>
+  group_by(team) |>
+  summarize(mean_height = mean(total_inches, na.rm = TRUE)) |>
+arrange(desc(mean_height))
 ```
 
-
+Answer: There are differences in average height across divisions. In Division III the average height (in inches) was 68.06 in. In Division II the mean was 69.15 in — slightly taller — and in Division I, the average at 70.55, marking the tallest average height. This shows a correlation between "stronger" players and taller heights. When zooming in on the 2023-24 season and looking at average height by team, seven out of the 10 tallest teams on average were ranked in the top 25 (https://www.espn.com/womens-college-basketball/rankings) in the NCAA for the season. In contrast, none of the shortest 10 teams on average were in the top 25. This shows that evidently, some of the tallest teams in the NCAA are also some of the best performing teams, whereas some of the shortest teams are not the best-performing. 
