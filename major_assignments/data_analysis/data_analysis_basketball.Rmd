@@ -191,7 +191,7 @@ international_students <- all_rosters |>
   ) 
 
   
-#We know from our exploratory analysis that the 2020-21 season had 13075 players drafted, the 2021-22 roster had 13645 players drafted, the 2022-23 roster had 13803 players drafted, and the 2023-24 roster had 13907 players drafted. To show the number of international students as a percentage of the total players per season, we're going to mutate using these numbers 
+#We know from our exploratory analysis that the 2020-21 season had 13075 players total signed, the 2021-22 roster had 13645 players total signed, the 2022-23 roster had 13803 players total signed, and the 2023-24 roster had 13907 players total signed. To show the number of international students as a percentage of the total players per season, we're going to mutate using these numbers 
 international_students <- international_students |>
   mutate(total_season_players = case_when(
     season == "2020-21" ~ "13075",
@@ -204,7 +204,8 @@ international_students <- international_students |>
 #To see what this trend looks like, we can make a visual 
 international_students |>
   ggplot(aes(x=season, y=international_pct)) +
-  geom_point() 
+  geom_point() +
+  expand_limits(x = 0, y = 0)
  
 ```
 
