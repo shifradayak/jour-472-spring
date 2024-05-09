@@ -208,8 +208,19 @@ international_students |>
   expand_limits(x = 0, y = 0)
  
 ```
+```{r}
+#We're also curious about what division most international players go to, so we can calculate the number of international students in each division with the following code
 
-Answer: The share of international students that make up each season's NCAA women's basketball roster has grown fairly linearly from the 2020-21 season to the 2023-24 season, indicating an increase in the percentage of international students on each season's roster. 
+all_rosters |>
+filter(country_clean != "USA") |>
+  group_by(division) |>
+  summarise(
+    international_division = n()
+  ) 
+
+```
+
+Answer: The share of international students that make up each season's NCAA women's basketball roster has grown fairly linearly from the 2020-21 season to the 2023-24 season, indicating an increase in the percentage of international students on each season's roster. Also, we can see that most international students who are signed to NCAA teams have gone to Division I over the past four seasons. 
 
 
 4. What percentage of students on the 2023-24 roster are redshirts, and are players in a certain year more likely to redshirt?
@@ -233,7 +244,21 @@ redshirt_23_24
 #As stated in the limitations discussed above, we're unsure if the redshirt column indicates that a player redshirted in the 2023-24 season, or if it just means they redshirted at any point in their college career. We completed this question assuming that the data represents a redshirt IN the 2023-24 season (in other words, in the corresponding academic year listed in this same dataframe), but if the data was documented differently, the result for this could be wrong.
 
 ```
-Answer: In the 2023-24 year, players were most likely to redshirt during their sophomore year. Junior year followed, and then freshman year. Senior year and a player's fifth year were the least common. In terms of the most and least popular options, about 31% more players redshirted during their sophomore year than their fifth year.
+```{r}
+#Out of curiosity, let's also group by division to see what division sees the most redshirts
+all_rosters |>
+  filter (redshirt == 1) |>
+  group_by (division) |>
+  summarise (
+    redshirt_count_by_division = n()
+  ) |>
+  arrange(desc(redshirt_count_by_division))
+
+
+```
+
+
+Answer: In the 2023-24 year, players were most likely to redshirt during their sophomore year. Junior year followed, and then freshman year. Senior year and a player's fifth year were the least common. In terms of the most and least popular options, about 31% more players redshirted during their sophomore year than their fifth year. Looking at all seasons in total, the most redshirts happened in divisions I and II. Division III, by comparison, sees more than 270 times fewer redshirts than Division I.
 
 
 5. Are there differences in average height between the different divisions across all seasons? Also, is there a correlation between higher/lower average heights at different schools and how well those teams did? For the second question, we'll focus on just the 2023-24 season as the most recent example. 
