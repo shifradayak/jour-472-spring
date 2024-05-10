@@ -22,6 +22,8 @@ roster_22_23 <- read_csv("data/wbb_rosters_2022_23.csv")
 roster_21_22 <- read_csv("data/wbb_rosters_2021_22.csv")
 roster_20_21 <- read_csv("data/wbb_rosters_2020_21.csv")
 ```
+Link to final memo: https://docs.google.com/document/d/162Q4uKlZH7Eu760_q2sSBVzzL0kzal0ii7GMLGZFeiM/edit?usp=sharing 
+
 ```{r}
 #Appending rosters for all four seasons 
 all_rosters <- bind_rows(roster_20_21, roster_21_22, roster_22_23, roster_23_24)
